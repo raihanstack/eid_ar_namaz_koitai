@@ -6,7 +6,7 @@ import {
   Search, Plus, Navigation, ThumbsUp, ThumbsDown,
   MapPin, Clock, Calendar, CheckCircle, X,
   ChevronRight, ChevronLeft, Trash2, MoonStar,
-  Globe, Info, Share2, AlertCircle, Facebook
+  Globe, Info, Share2, AlertCircle, Facebook, Github
 } from 'lucide-react';
 import { createClient } from '@supabase/supabase-js';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -663,7 +663,6 @@ export default function App() {
           )}
         </AnimatePresence>
       </div>
-
       <footer className="shrink-0 h-[60px] md:h-[70px] bg-white border-t border-slate-100 flex items-center px-4 relative z-[2000]">
         <div className="max-w-7xl mx-auto w-full flex justify-between items-center">
           <div className="flex items-center gap-2.5">
@@ -674,12 +673,34 @@ export default function App() {
               <span className="text-emerald-600">ঈদের</span> নামাজ কয়টায়
             </h2>
           </div>
+
           <div className="flex items-center gap-6">
-            <a href="https://facebook.com/raihanstack" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-slate-400 hover:text-emerald-600 transition-colors group">
+            <a
+              href="https://facebook.com/raihanstack"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-2 bg-blue-600 text-white px-3 py-1 rounded-full hover:bg-black transition-colors group"
+            >
               <Facebook size={18} className="group-hover:scale-110 transition-transform" />
-              <span className="text-[10px] md:text-xs font-bold uppercase tracking-widest hidden xs:block">Facebook</span>
+              <span className="text-[10px] md:text-xs font-bold uppercase tracking-widest hidden xs:block">
+                Facebook
+              </span>
             </a>
-            <div className="text-[11px] md:text-sm text-slate-600 font-bold uppercase tracking-wider">&copy; {new Date().getFullYear()} raihanstack</div>
+            <a
+              href="https://github.com/raihanstack"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-2 bg-black text-white px-3 py-1 rounded-full hover:bg-blue-700 transition-colors group"
+            >
+              <Github size={18} className="group-hover:scale-110 transition-transform" />
+              <span className="text-[10px] md:text-xs font-bold uppercase tracking-widest hidden xs:block">
+                Github
+              </span>
+            </a>
+
+            <div className="text-[11px] md:text-sm text-slate-600 font-bold uppercase tracking-wider">
+              &copy; {new Date().getFullYear()} raihanstack
+            </div>
           </div>
         </div>
       </footer>
