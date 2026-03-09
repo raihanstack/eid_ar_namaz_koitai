@@ -723,7 +723,6 @@ export default function App() {
         </button>
       </div>
 
-      {/* Professional Footer */}
       <footer className="shrink-0 h-[50px] relative z-[1000] bg-white border-t border-stone-200 flex items-center">
         <div className="max-w-7xl mx-auto w-full px-4 flex justify-between items-center">
           {/* Left Section - Branding */}
