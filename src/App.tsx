@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, Tooltip, useMapEvents, useMap } from 'react-leaflet';
 import { io } from 'socket.io-client';
-import { FaFacebookF, FaGithub } from 'react-icons/fa';
 import { 
   MapPin, 
   Plus, 
@@ -681,10 +680,10 @@ export default function App() {
                 {/* Social Icons */}
                 <div className="flex gap-3 mt-2">
                   <a href="https://facebook.com/raihanstack" aria-label="Facebook" target="_blank" rel="noopener noreferrer" className="hover:text-blue-600 transition-colors">
-                    <FaFacebookF size={20} />
+                    Facebook
                   </a>
                   <a href="https://github.com/raihanstack" aria-label="GitHub" target="_blank" rel="noopener noreferrer" className="hover:text-gray-800 transition-colors">
-                    <FaGithub size={20} />
+                    Github
                   </a>
                 </div>
               </div>
