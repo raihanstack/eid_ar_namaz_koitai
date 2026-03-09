@@ -1,11 +1,29 @@
-<div align="center">
+# Eid Namaz & Mosque Locator (Open Access)
 
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
+A community-driven platform to find and verify Eid prayer locations and timings. No registration required.
 
-  <h1>Built with AI Studio</h2>
+## Features
 
-  <p>The fastest path from prompt to production with Gemini.</p>
+- **Interactive Map**: View mosques and prayer times on a map.
+- **Open Submissions**: Anyone can submit new mosque locations.
+- **Verification System**: Users can vote on the accuracy of mosque information (limited to once per mosque per browser).
+- **Real-time Updates**: New submissions and votes appear instantly via WebSockets.
+- **Multilingual**: Support for English and Bengali.
 
-  <a href="https://aistudio.google.com/apps">Start building</a>
+## Setup
 
-</div>
+1. Install dependencies:
+   ```bash
+   npm install
+   ```
+
+2. Run development server:
+   ```bash
+   npm run dev
+   ```
+
+## API Documentation
+
+- `GET /api/mosques`: Get all mosques.
+- `POST /api/mosques`: Submit a new mosque.
+- `POST /api/votes`: Vote on a mosque's accuracy.

@@ -1,0 +1,5 @@
+{
+  "name": "ঈদের নামাজ কয়টায়",
+  "description": "আপনার এলাকার ঈদের নামাজের সময় ও মসজিদের অবস্থান খুঁজে বের করুন।",
+  "requestFramePermissions": ["geolocation"]
+}
