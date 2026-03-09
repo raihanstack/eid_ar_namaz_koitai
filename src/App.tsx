@@ -241,14 +241,20 @@ export default function App() {
       if (error) throw error;
       console.log('Fetched mosques:', data);
 
-      const formatted = data.map((m: any) => ({
-        ...m,
-        namaz_times: m.namaz_times?.map((nt: any) => nt.namaz_time) || [],
-        true_votes: m.votes?.filter((v: any) => v.is_true === 1).length || 0,
-        false_votes: m.votes?.filter((v: any) => v.is_true === 0).length || 0,
-        report_count: m.reports?.length || 0
-      }));
+      const formatted = data.map((m: any) => {
+        const trueVotes = m.votes?.filter((v: any) => v.is_true === 1 || v.is_true === true).length || 0;
+        const falseVotes = m.votes?.filter((v: any) => v.is_true === 0 || v.is_true === false).length || 0;
+        
+        return {
+          ...m,
+          namaz_times: m.namaz_times?.map((nt: any) => nt.namaz_time) || [],
+          true_votes: trueVotes,
+          false_votes: falseVotes,
+          report_count: m.reports?.length || 0
+        };
+      });
 
+      console.log('Formatted mosques with votes:', formatted.map(f => ({ name: f.name_bn, true: f.true_votes, false: f.false_votes })));
       setMosques(formatted);
     } catch (err) {
       console.error('Error fetching mosques:', err);
@@ -391,6 +397,8 @@ export default function App() {
 
       if (error) throw error;
       localStorage.setItem(votedKey, 'true');
+      console.log('Vote submitted successfully');
+      fetchMosques(); // Refresh immediately
     } catch (err: any) {
       console.error('Voting failed:', err);
       alert(t.error);
@@ -434,8 +442,23 @@ export default function App() {
   const handleRemoveMosque = async (mosqueId: number) => {
     if (!confirm(t.confirmRemove)) return;
     try {
+      console.log('Starting deletion for mosque:', mosqueId);
+      
+      // 1. Delete dependent records manually (to bypass FK constraints if not cascading)
+      console.log('Deleting related namaz_times, votes, and reports...');
+      await supabase.from('namaz_times').delete().eq('mosque_id', mosqueId);
+      await supabase.from('votes').delete().eq('mosque_id', mosqueId);
+      await supabase.from('reports').delete().eq('mosque_id', mosqueId);
+
+      // 2. Delete the mosque
+      console.log('Deleting mosque record...');
       const { error } = await supabase.from('mosques').delete().eq('id', mosqueId);
+      
       if (error) throw error;
+      console.log('Mosque deleted successfully');
+      
+      // Realtime should handle state update, but manual call handles edge cases
+      fetchMosques();
     } catch (err: any) {
       console.error('Removal failed:', err);
       alert(t.error);
