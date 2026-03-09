@@ -2,10 +2,10 @@ import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, useMap, Tooltip } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
-import { 
-  Search, Plus, Navigation, ThumbsUp, ThumbsDown, 
-  MapPin, Clock, Calendar, CheckCircle, X, 
-  ChevronRight, ChevronLeft, Trash2, MoonStar, 
+import {
+  Search, Plus, Navigation, ThumbsUp, ThumbsDown,
+  MapPin, Clock, Calendar, CheckCircle, X,
+  ChevronRight, ChevronLeft, Trash2, MoonStar,
   Globe, Info, Share2, AlertCircle, Facebook
 } from 'lucide-react';
 import { createClient } from '@supabase/supabase-js';
@@ -481,7 +481,7 @@ export default function App() {
       <div class="marker-flag-container">
         <div class="marker-flag-pulse"></div>
         <div class="marker-flag-main">
-          <img src="/favicon.png" class="w-6 h-6 object-contain" alt="mosque" />
+          <img src="../src/assets/favicon.png" class="w-6 h-6 object-contain" alt="mosque" />
         </div>
       </div>
     `,
@@ -496,7 +496,7 @@ export default function App() {
       <nav className="shrink-0 h-[60px] md:h-[72px] relative z-[2000] bg-white/95 backdrop-blur-xl border-b border-slate-200 px-4 flex items-center justify-between gap-4 shadow-sm">
         <div className="flex items-center gap-3 shrink-0">
           <div className="bg-emerald-600/10 p-2 rounded-xl text-emerald-600 shrink-0">
-            <img src="/favicon.png" className="w-8 h-8 object-contain" alt="logo" />
+            <img src="../src/assets/favicon.png" className="w-8 h-8 object-contain" alt="logo" />
           </div>
           <div className="flex flex-col">
             <h1 className="text-base md:text-xl font-black tracking-tight text-slate-900 leading-none">
@@ -530,8 +530,8 @@ export default function App() {
               onClick={() => onMosqueClick(m.id)}
               className={cn(
                 "px-5 py-2 md:px-6 md:py-2.5 rounded-full text-xs md:text-sm font-bold transition-all border whitespace-nowrap",
-                selectedMosqueId === m.id 
-                  ? "bg-emerald-600 text-white border-emerald-600 shadow-xl shadow-emerald-100/50 scale-105" 
+                selectedMosqueId === m.id
+                  ? "bg-emerald-600 text-white border-emerald-600 shadow-xl shadow-emerald-100/50 scale-105"
                   : "bg-white text-slate-500 border-slate-200/60 hover:border-emerald-200 hover:text-emerald-600 hover:bg-emerald-50/30"
               )}
             >
@@ -543,17 +543,17 @@ export default function App() {
 
       <div className="flex-1 relative z-0">
         <MapContainer center={[23.8103, 90.4125]} zoom={13} className="h-full w-full z-0" zoomControl={false}>
-          <TileLayer 
+          <TileLayer
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
           />
           <MapController isPickingLocation={isPickingLocation} onLocationPick={handleLocationPick} selectedMosqueId={selectedMosqueId} mosques={mosques} userLocation={userLocation} />
-          
+
           {filteredMosques.map(mosque => (
-            <Marker 
-              key={mosque.id} 
-              position={[mosque.lat, mosque.lng]} 
-              ref={(el) => (markerRefs.current[mosque.id] = el)} 
+            <Marker
+              key={mosque.id}
+              position={[mosque.lat, mosque.lng]}
+              ref={(el) => (markerRefs.current[mosque.id] = el)}
               icon={mosqueIcon}
               eventHandlers={{ click: () => setSelectedMosqueId(mosque.id) }}
             >
@@ -589,10 +589,10 @@ export default function App() {
                           <div key={idx} className="bg-white border border-slate-200 px-3 py-1.5 rounded-xl text-xs md:text-sm font-black text-slate-700 shadow-sm flex items-center gap-2">
                             <span className="text-emerald-600 text-[10px] border-r border-slate-100 pr-2">{getJamatLabel(idx).split(' ')[0]}</span>
                             {time}
-                            <button onClick={(e) => {e.stopPropagation(); handleRemoveNamazTime(mosque.id, idx);}} className="absolute -top-1.5 -right-1.5 bg-red-500 text-white p-0.5 rounded-full shadow-md hover:bg-red-600 active:scale-90"><X size={10}/></button>
+                            <button onClick={(e) => { e.stopPropagation(); handleRemoveNamazTime(mosque.id, idx); }} className="absolute -top-1.5 -right-1.5 bg-red-500 text-white p-0.5 rounded-full shadow-md hover:bg-red-600 active:scale-90"><X size={10} /></button>
                           </div>
                         ))}
-                        <button onClick={(e) => {e.stopPropagation(); handleAddNamazTimeExisting(mosque.id);}} className="flex flex-col items-center justify-center bg-stone-50 text-stone-400 px-3 py-1.5 rounded-xl text-[10px] font-bold border border-stone-200 border-dashed hover:bg-stone-100 hover:text-emerald-600 transition-all min-w-[80px]">
+                        <button onClick={(e) => { e.stopPropagation(); handleAddNamazTimeExisting(mosque.id); }} className="flex flex-col items-center justify-center bg-stone-50 text-stone-400 px-3 py-1.5 rounded-xl text-[10px] font-bold border border-stone-200 border-dashed hover:bg-stone-100 hover:text-emerald-600 transition-all min-w-[80px]">
                           <Plus size={14} className="mb-0.5" />
                           যুক্ত করুন
                         </button>
@@ -638,7 +638,7 @@ export default function App() {
             <Navigation size={22} className="text-emerald-600 group-hover:rotate-12 transition-transform" />
             <span className="text-sm font-bold pt-0.5">{t.myLocation}</span>
           </button>
-          
+
           <button
             onClick={() => setIsPickingLocation(true)}
             className={cn(
@@ -656,9 +656,9 @@ export default function App() {
         <AnimatePresence>
           {isPickingLocation && (
             <motion.div initial={{ y: 50, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: 50, opacity: 0 }} className="fixed bottom-24 left-1/2 -translate-x-1/2 z-[2000] bg-slate-900/95 text-white px-8 py-5 rounded-[28px] shadow-2xl flex items-center gap-4 border border-white/10 backdrop-blur-xl min-w-[300px] justify-center">
-              <div className="bg-emerald-500 p-2.5 rounded-xl animate-pulse shadow-lg shadow-emerald-500/20"><MapPin size={22}/></div>
+              <div className="bg-emerald-500 p-2.5 rounded-xl animate-pulse shadow-lg shadow-emerald-500/20"><MapPin size={22} /></div>
               <span className="text-sm md:text-base font-black tracking-tight">{t.pickInstruction}</span>
-              <button onClick={() => setIsPickingLocation(false)} className="ml-4 p-2.5 bg-white/10 hover:bg-white/20 rounded-full transition-colors"><X size={20}/></button>
+              <button onClick={() => setIsPickingLocation(false)} className="ml-4 p-2.5 bg-white/10 hover:bg-white/20 rounded-full transition-colors"><X size={20} /></button>
             </motion.div>
           )}
         </AnimatePresence>
@@ -668,7 +668,7 @@ export default function App() {
         <div className="max-w-7xl mx-auto w-full flex justify-between items-center">
           <div className="flex items-center gap-2.5">
             <div className="bg-emerald-600/10 p-1.5 rounded-lg text-emerald-600">
-               <img src="/favicon.png" className="w-5 h-5 md:w-6 md:h-6 object-contain" alt="logo" />
+              <img src="../src/assets/favicon.png" className="w-5 h-5 md:w-6 md:h-6 object-contain" alt="logo" />
             </div>
             <h2 className="text-xs md:text-sm font-black text-slate-900 tracking-tight flex items-center gap-1.5">
               <span className="text-emerald-600">ঈদের</span> নামাজ কয়টায়
@@ -691,13 +691,13 @@ export default function App() {
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setIsAddModalOpen(false)} className="absolute inset-0 bg-stone-900/60 backdrop-blur-sm" />
             <motion.div initial={{ scale: 0.9, opacity: 0, y: 20 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.9, opacity: 0, y: 20 }} className="relative w-full max-w-xl bg-white rounded-[32px] overflow-hidden shadow-2xl flex flex-col max-h-[90vh]">
               <div className="bg-emerald-600 p-8 text-white relative">
-                <button onClick={() => setIsAddModalOpen(false)} className="absolute top-8 right-8 p-2 bg-white/10 hover:bg-white/20 rounded-full transition-colors"><X size={20}/></button>
+                <button onClick={() => setIsAddModalOpen(false)} className="absolute top-8 right-8 p-2 bg-white/10 hover:bg-white/20 rounded-full transition-colors"><X size={20} /></button>
                 <div className="flex items-center gap-4 mb-3">
-                  <div className="bg-white p-3 rounded-2xl text-emerald-600 shadow-2xl scale-110"><Plus size={28}/></div>
+                  <div className="bg-white p-3 rounded-2xl text-emerald-600 shadow-2xl scale-110"><Plus size={28} /></div>
                   <h2 className="text-2xl md:text-3xl font-black tracking-tight">{t.addMosque}</h2>
                 </div>
                 <p className="text-emerald-50/70 text-sm md:text-base font-bold leading-relaxed max-w-md">{t.shareInfo}</p>
-                
+
                 <div className="flex gap-2 mt-8">
                   {[1, 2, 3].map((step) => (
                     <div key={step} className={cn("h-1.5 flex-1 rounded-full transition-all duration-500", activeStep >= step ? "bg-white" : "bg-white/10")} />
@@ -711,7 +711,7 @@ export default function App() {
                     <motion.div initial={{ x: 20, opacity: 0 }} animate={{ x: 0, opacity: 1 }} className="space-y-6">
                       <div className="bg-stone-50 p-6 rounded-3xl border border-stone-100 flex items-center justify-between">
                         <div className="flex items-center gap-4">
-                          <div className="bg-emerald-100 p-3 rounded-2xl text-emerald-600"><MapPin size={24}/></div>
+                          <div className="bg-emerald-100 p-3 rounded-2xl text-emerald-600"><MapPin size={24} /></div>
                           <div>
                             <div className="text-[10px] font-black text-stone-400 uppercase tracking-widest mb-0.5">{t.selectedLocation}</div>
                             <div className="text-sm font-mono text-stone-600">{newMosque.lat.toFixed(5)}, {newMosque.lng.toFixed(5)}</div>
@@ -719,15 +719,15 @@ export default function App() {
                         </div>
                         <CheckCircle size={24} className="text-emerald-500" />
                       </div>
-                      
+
                       <div className="grid grid-cols-1 gap-4">
                         <div className="space-y-2">
                           <label className="text-xs font-black text-stone-400 uppercase tracking-widest px-1">{t.mosqueNameBn}</label>
-                          <input 
-                            type="text" required placeholder="মসজিদের নাম লিখুন..." 
+                          <input
+                            type="text" required placeholder="মসজিদের নাম লিখুন..."
                             className="w-full px-6 py-4 bg-stone-50 border border-stone-100 rounded-2xl text-base focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 transition-all font-bold text-stone-700 outline-none"
                             value={newMosque.name_bn}
-                            onChange={(e) => setNewMosque(prev => ({...prev, name_bn: e.target.value, name_en: e.target.value}))}
+                            onChange={(e) => setNewMosque(prev => ({ ...prev, name_bn: e.target.value, name_en: e.target.value }))}
                           />
                         </div>
                       </div>
@@ -738,10 +738,10 @@ export default function App() {
                     <motion.div initial={{ x: 20, opacity: 0 }} animate={{ x: 0, opacity: 1 }} className="space-y-6">
                       <div className="space-y-2">
                         <label className="text-xs font-black text-stone-400 uppercase tracking-widest px-1">ঈদের তারিখ</label>
-                        <BnDateInput 
+                        <BnDateInput
                           className="w-full px-6 py-4 bg-stone-50 border border-stone-100 rounded-2xl text-base focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 transition-all font-bold text-stone-700 outline-none"
                           value={newMosque.eid_date}
-                          onChange={(val: string) => setNewMosque(prev => ({...prev, eid_date: val}))}
+                          onChange={(val: string) => setNewMosque(prev => ({ ...prev, eid_date: val }))}
                         />
                       </div>
                     </motion.div>
@@ -756,8 +756,8 @@ export default function App() {
                             <div key={index} className="flex gap-2">
                               <div className="flex-1 bg-stone-50 rounded-2xl border border-stone-100 flex items-center px-5 focus-within:border-emerald-500 transition-all">
                                 <Clock size={18} className="text-stone-400 mr-3" />
-                                <input 
-                                  type="time" required 
+                                <input
+                                  type="time" required
                                   className="w-full py-4 bg-transparent border-none focus:ring-0 text-base font-bold text-stone-700"
                                   value={time}
                                   onChange={(e) => updateNamazTime(index, e.target.value)}
@@ -765,13 +765,13 @@ export default function App() {
                                 <span className="text-[10px] font-black text-emerald-600 bg-emerald-50 px-2 py-1 rounded-lg ml-2">{getJamatLabel(index).split(' ')[0]}</span>
                               </div>
                               {newMosque.namaz_times.length > 1 && (
-                                <button type="button" onClick={() => removeNamazTime(index)} className="p-4 text-red-500 hover:bg-red-50 rounded-2xl transition-colors shrink-0"><Trash2 size={20}/></button>
+                                <button type="button" onClick={() => removeNamazTime(index)} className="p-4 text-red-500 hover:bg-red-50 rounded-2xl transition-colors shrink-0"><Trash2 size={20} /></button>
                               )}
                             </div>
                           ))}
                         </div>
                         <button type="button" onClick={addNamazTime} className="w-full py-4 bg-emerald-50 text-emerald-600 rounded-2xl font-bold border-2 border-dashed border-emerald-200 hover:bg-emerald-100 transition-all flex items-center justify-center gap-2 mt-2">
-                          <Plus size={20}/> {t.addTime}
+                          <Plus size={20} /> {t.addTime}
                         </button>
                       </div>
                     </motion.div>
@@ -780,12 +780,12 @@ export default function App() {
                   <div className="flex gap-3 pt-8 border-t border-slate-100">
                     {activeStep > 1 && (
                       <button type="button" onClick={() => setActiveStep(prev => prev - 1)} className="flex-1 py-4 bg-slate-100 text-slate-600 rounded-2xl font-bold hover:bg-slate-200 transition-all active:scale-95 flex items-center justify-center gap-2">
-                        <ChevronLeft size={20}/> পিছনে
+                        <ChevronLeft size={20} /> পিছনে
                       </button>
                     )}
                     {activeStep < 3 ? (
                       <button type="button" onClick={() => setActiveStep(prev => prev + 1)} className="flex-[2] py-4 bg-emerald-600 text-white rounded-2xl font-bold hover:bg-emerald-700 transition-all shadow-xl shadow-emerald-100 active:scale-95 flex items-center justify-center gap-2">
-                         পরবর্তী <ChevronRight size={20}/>
+                        পরবর্তী <ChevronRight size={20} />
                       </button>
                     ) : (
                       <button type="submit" disabled={isSubmitting} className="flex-[2] py-4 bg-emerald-600 text-white rounded-2xl font-bold hover:bg-emerald-700 shadow-xl shadow-emerald-100 transition-all active:scale-95 disabled:opacity-50">
