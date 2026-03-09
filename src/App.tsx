@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, Tooltip, useMapEvents, useMap } from 'react-leaflet';
-import { io } from 'socket.io-client';
 import {
   MapPin,
   Plus,
@@ -25,13 +24,21 @@ import { motion, AnimatePresence } from 'motion/react';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import L from 'leaflet';
+import { createClient } from '@supabase/supabase-js';
 
 // --- Utils ---
 function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-const socket = io();
+const supabaseUrl = (import.meta as any).env.VITE_SUPABASE_URL;
+const supabaseKey = (import.meta as any).env.VITE_SUPABASE_ANON_KEY;
+
+if (!supabaseUrl || !supabaseKey) {
+  console.warn('Missing Supabase credentials in .env');
+}
+
+const supabase = createClient(supabaseUrl || '', supabaseKey || '');
 
 // --- Types ---
 interface Mosque {
@@ -52,7 +59,7 @@ interface Mosque {
 const t = {
   title: "ঈদের নামাজ কয়টায়",
   search: "মসজিদের নাম ও স্থান দিয়ে খুঁজুন...",
-  addMosque: "মসজিদ ও নামাজের সময় যুক্ত করুন",
+  addMosque: "নামাজের সময় যুক্ত করুন",
   mosqueNameBn: "মসজিদের নাম (বাংলায়)",
   date: "ঈদের সম্ভাব্য তারিখ",
   time: "ঈদের জামাতের সময়",
@@ -190,43 +197,53 @@ export default function App() {
 
     fetchMosques();
 
-    // Auto-fetch user location on load
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (pos) => setUserLocation([pos.coords.latitude, pos.coords.longitude]),
-        (err) => console.log('Auto geolocation failed:', err),
-        { enableHighAccuracy: true, timeout: 5000 }
-      );
-    }
-
-    socket.on('mosque_added', (mosque: Mosque) => {
-      setMosques(prev => [...prev, mosque]);
-    });
-
-    socket.on('mosque_removed', ({ id }) => {
-      setMosques(prev => prev.filter(m => m.id !== id));
-    });
-
-    socket.on('mosque_updated', ({ id, namaz_times }) => {
-      setMosques(prev => prev.map(m => m.id === id ? { ...m, namaz_times } : m));
-    });
-
-    socket.on('vote_updated', ({ mosque_id, true_votes, false_votes }) => {
-      setMosques(prev => prev.map(m => m.id === mosque_id ? { ...m, true_votes, false_votes } : m));
-    });
+    const mosquesSubscription = supabase
+      .channel('any')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'mosques' }, (payload) => {
+        if (payload.eventType === 'INSERT') {
+          // Note: Full mosque data with times/votes might need a refresh or secondary fetch
+          fetchMosques();
+        } else if (payload.eventType === 'DELETE') {
+          setMosques(prev => prev.filter(m => m.id !== payload.old.id));
+        } else if (payload.eventType === 'UPDATE') {
+          fetchMosques();
+        }
+      })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'namaz_times' }, () => fetchMosques())
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'votes' }, () => fetchMosques())
+      .subscribe();
 
     return () => {
-      socket.off('mosque_added');
-      socket.off('mosque_removed');
-      socket.off('mosque_updated');
-      socket.off('vote_updated');
+      supabase.removeChannel(mosquesSubscription);
     };
   }, []);
 
   const fetchMosques = async () => {
-    const res = await fetch('/api/mosques');
-    const data = await res.json();
-    setMosques(data);
+    try {
+      const { data, error } = await supabase
+        .from('mosques')
+        .select(`
+          *,
+          namaz_times ( namaz_time ),
+          votes ( is_true ),
+          reports ( id )
+        `)
+        .eq('status', 'approved');
+
+      if (error) throw error;
+
+      const formatted = data.map((m: any) => ({
+        ...m,
+        namaz_times: m.namaz_times?.map((nt: any) => nt.namaz_time) || [],
+        true_votes: m.votes?.filter((v: any) => v.is_true === 1).length || 0,
+        false_votes: m.votes?.filter((v: any) => v.is_true === 0).length || 0,
+        report_count: m.reports?.length || 0
+      }));
+
+      setMosques(formatted);
+    } catch (err) {
+      console.error('Error fetching mosques:', err);
+    }
   };
 
   const handleLocationPick = async (lat: number, lng: number) => {
@@ -250,13 +267,11 @@ export default function App() {
     const time = prompt('নতুন নামাজের সময় দিন (যেমন: 08:30 AM)');
     if (!time) return;
 
-    const res = await fetch(`/api/namaz-times/${mosqueId}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ namaz_time: time })
-    });
+    const { error } = await supabase
+      .from('namaz_times')
+      .insert([{ mosque_id: mosqueId, namaz_time: time }]);
 
-    if (!res.ok) {
+    if (error) {
       alert(t.error);
     }
   };
@@ -264,28 +279,46 @@ export default function App() {
   const handleAddMosque = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Filter out empty namaz times
     const cleanedTimes = newMosque.namaz_times.filter(t => t.trim() !== '');
     if (cleanedTimes.length === 0) {
       alert('অনুগ্রহ করে অন্তত একটি নামাজের সময় যোগ করুন');
       return;
     }
 
-    const mosqueToSubmit = {
-      ...newMosque,
-      namaz_times: cleanedTimes
-    };
+    try {
+      // 1. Insert Mosque
+      const { data: mosque, error: mosqueError } = await supabase
+        .from('mosques')
+        .insert([{
+          name_en: newMosque.name_en,
+          name_bn: newMosque.name_bn,
+          lat: newMosque.lat,
+          lng: newMosque.lng,
+          eid_date: newMosque.eid_date,
+          status: 'approved'
+        }])
+        .select()
+        .single();
 
-    const res = await fetch('/api/mosques', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(mosqueToSubmit)
-    });
-    if (res.ok) {
+      if (mosqueError) throw mosqueError;
+
+      // 2. Insert Namaz Times
+      const timesToInsert = cleanedTimes.map(time => ({
+        mosque_id: mosque.id,
+        namaz_time: time
+      }));
+
+      const { error: timesError } = await supabase
+        .from('namaz_times')
+        .insert(timesToInsert);
+
+      if (timesError) throw timesError;
+
       setIsAddModalOpen(false);
       setIsPickingLocation(false);
       setNewMosque({ name_en: '', name_bn: '', lat: 0, lng: 0, eid_date: '', namaz_times: [''] });
-    } else {
+    } catch (err) {
+      console.error('Submission failed:', err);
       alert(t.error);
     }
   };
@@ -312,23 +345,26 @@ export default function App() {
   };
 
   const handleVote = async (mosqueId: number, isTrue: boolean) => {
-    // Check local storage to see if user already voted for this mosque
     const votedKey = `voted_${mosqueId}`;
     if (localStorage.getItem(votedKey)) {
       alert('আপনি আগেই এই মসজিদে ভোট দিয়েছেন।');
       return;
     }
 
-    const res = await fetch('/api/votes', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ mosque_id: mosqueId, is_true: isTrue, voter_id: voterId })
-    });
+    try {
+      const { error } = await supabase
+        .from('votes')
+        .insert([{
+          voter_id: voterId,
+          mosque_id: mosqueId,
+          is_true: isTrue ? 1 : 0
+        }]);
 
-    if (!res.ok) {
-      alert(t.error);
-    } else {
+      if (error) throw error;
       localStorage.setItem(votedKey, 'true');
+    } catch (err: any) {
+      console.error('Voting failed:', err);
+      alert(t.error);
     }
   };
 
@@ -336,45 +372,68 @@ export default function App() {
     const reportedKey = `reported_${mosqueId}`;
     if (localStorage.getItem(reportedKey)) return;
 
-    const res = await fetch('/api/reports', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ mosque_id: mosqueId, reporter_id: voterId })
-    });
+    try {
+      const { error } = await supabase
+        .from('reports')
+        .insert([{
+          mosque_id: mosqueId,
+          reporter_id: voterId,
+          reason: 'Reported'
+        }]);
 
-    if (res.ok) {
-      const data = await res.json();
+      if (error) throw error;
       localStorage.setItem(reportedKey, 'true');
-      if (data.deleted) {
+
+      const { count, error: countError } = await supabase
+        .from('reports')
+        .select('*', { count: 'exact', head: true })
+        .eq('mosque_id', mosqueId);
+
+      if (countError) throw countError;
+
+      if (count && count >= 3) {
+        await supabase.from('mosques').delete().eq('id', mosqueId);
         alert(t.reportedDeleted);
       } else {
-        alert(t.report);
+        alert(t.reported);
       }
+    } catch (err: any) {
+      console.error('Reporting failed:', err);
     }
   };
 
   const handleRemoveMosque = async (mosqueId: number) => {
     if (!confirm(t.confirmRemove)) return;
-
-    const res = await fetch(`/api/mosques/${mosqueId}`, {
-      method: 'DELETE',
-      headers: { 'Content-Type': 'application/json' }
-    });
-
-    if (!res.ok) {
+    try {
+      const { error } = await supabase.from('mosques').delete().eq('id', mosqueId);
+      if (error) throw error;
+    } catch (err: any) {
+      console.error('Removal failed:', err);
       alert(t.error);
     }
   };
 
   const handleRemoveNamazTime = async (mosqueId: number, index: number) => {
     if (!confirm(t.confirmRemoveTime)) return;
+    try {
+      const { data: times, error: listError } = await supabase
+        .from('namaz_times')
+        .select('id')
+        .eq('mosque_id', mosqueId)
+        .order('id', { ascending: true });
 
-    const res = await fetch(`/api/namaz-times/${mosqueId}/${index}`, {
-      method: 'DELETE',
-      headers: { 'Content-Type': 'application/json' }
-    });
+      if (listError) throw listError;
 
-    if (!res.ok) {
+      const timeToDelete = times[index];
+      if (timeToDelete) {
+        const { error } = await supabase
+          .from('namaz_times')
+          .delete()
+          .eq('id', timeToDelete.id);
+        if (error) throw error;
+      }
+    } catch (err: any) {
+      console.error('Time removal failed:', err);
       alert(t.error);
     }
   };
@@ -593,7 +652,7 @@ export default function App() {
                         {t.date}
                       </div>
                       <div className="text-xs md:text-sm font-bold text-stone-700">
-                        {mosque.eid_date}
+                        {formatDateBn(mosque.eid_date)}
                       </div>
                     </div>
 
@@ -821,11 +880,11 @@ export default function App() {
                   <div className="space-y-5 md:space-y-6">
                     <div className="space-y-2">
                       <label className="text-xs font-bold text-stone-400 uppercase tracking-widest ml-1">{t.date}</label>
-                      <input
-                        type="date" required
-                        className="w-full px-4 md:px-5 py-3 md:py-4 bg-stone-50 rounded-2xl border border-stone-100 focus:ring-2 focus:ring-emerald-500 focus:bg-white transition-all outline-none text-sm md:text-base"
+                      <BnDateInput
+                        required
+                        className="w-full px-4 md:px-5 py-3 md:py-4 bg-stone-50 rounded-2xl border border-stone-100 focus:ring-2 focus:ring-emerald-500 focus:bg-white transition-all outline-none text-sm md:text-base font-bold"
                         value={newMosque.eid_date}
-                        onChange={e => setNewMosque({ ...newMosque, eid_date: e.target.value })}
+                        onChange={(val: string) => setNewMosque({ ...newMosque, eid_date: val })}
                       />
                     </div>
 
