@@ -6,7 +6,7 @@ import {
   Search, Plus, Navigation, ThumbsUp, ThumbsDown, 
   MapPin, Clock, Calendar, CheckCircle, X, 
   ChevronRight, ChevronLeft, Trash2, MoonStar, 
-  Globe, Info, Share2, AlertCircle
+  Globe, Info, Share2, AlertCircle, Facebook
 } from 'lucide-react';
 import { createClient } from '@supabase/supabase-js';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -41,33 +41,33 @@ interface Mosque {
 // --- Professional Bengali Translations ---
 const t = {
   title: "ঈদের নামাজ কয়টায়",
-  search: "মসজিদ বা এলাকা লিখে খুঁজুন...",
-  addMosque: "নামাজের সময় যুক্ত করুন",
-  myLocation: "আমার অবস্থান",
+  search: "মসজিদ বা এলাকা লিখে অনুসন্ধান করুন...",
+  addMosque: "নামাজের সময়সূচী যুক্ত করুন",
+  myLocation: "আমার বর্তমান অবস্থান",
   anyDistance: "যেকোনো দূরত্ব",
   km: "কিমি",
   away: "দূরে",
-  date: "তারিখ",
-  namazTimes: "নামাজের সময়সমূহ",
-  verify: "তথ্যটি কি সঠিক? ভোট দিন",
-  yes: "হ্যাঁ",
-  no: "না",
-  report: "ভুল তথ্য রিপোর্ট করুন",
+  date: "ঈদের তারিখ",
+  namazTimes: "নামাজের সময়সূচী",
+  verify: "এই তথ্যটি কি সঠিক? আপনার মতামত দিন",
+  yes: "হ্যাঁ, সঠিক",
+  no: "না, ভুল",
+  report: "ভুল তথ্যের জন্য রিপোর্ট করুন",
   remove: "মুছে ফেলুন",
-  confirmRemove: "আপনি কি নিশ্চিতভাবে এই মসজিদটি মুছে ফেলতে চান?",
-  confirmRemoveTime: "আপনি কি এই সময়টি মুছে ফেলতে চান?",
-  reported: "রিপোর্ট জমা দেওয়া হয়েছে।",
-  reportedDeleted: "অতিরিক্ত রিপোর্টের কারণে তথ্যটি মুছে ফেলা হয়েছে।",
-  error: "দুঃখিত, কোনো একটি সমস্যা হয়েছে। আবার চেষ্টা করুন।",
-  locationPick: "ম্যাপে ক্লিক করে অবস্থান দেখান",
-  pickInstruction: "ম্যাপের সঠিক স্থানে ক্লিক করে মসজিদটি চিহ্নিত করুন",
-  mosqueNameBn: "মসজিদের নাম (বাংলায়)",
-  selectedLocation: "নির্ধারিত অবস্থান",
-  submit: "তথ্য জমা দিন",
-  cancel: "বাতিল",
-  allMosques: "সব মসজিদ",
-  shareInfo: "আপনার এলাকার ঈদের জামাতের সময় জানিয়ে অন্যদের সাহায্য করুন",
-  addTime: "আরো জামাত যুক্ত করুন",
+  confirmRemove: "আপনি কি নিশ্চিতভাবে এই জামাতের তথ্যটি মুছে ফেলতে চান?",
+  confirmRemoveTime: "আপনি কি এই নির্দিষ্ট সময়টি মুছে ফেলতে চান?",
+  reported: "আপনার রিপোর্টটি সফলভাবে গ্রহণ করা হয়েছে।",
+  reportedDeleted: "অতিরিক্ত রিপোর্টের কারণে এই তথ্যটি স্বয়ংক্রিয়ভাবে মুছে ফেলা হয়েছে।",
+  error: "দুঃখিত, কোনো একটি সমস্যা হয়েছে। দয়া করে আবার চেষ্টা করুন।",
+  locationPick: "ম্যাপে ক্লিক করে সঠিক অবস্থানটি চিহ্নিত করুন",
+  pickInstruction: "ম্যাপের সঠিক স্থানে ক্লিক করে মসজিদের অবস্থানটি নিশ্চিত করুন",
+  mosqueNameBn: "মসজিদ বা স্থানের নাম (বাংলায়)",
+  selectedLocation: "নির্বাচিত ভৌগোলিক অবস্থান",
+  submit: "সম্পূর্ণ তথ্য জমা দিন",
+  cancel: "বাতিল করুন",
+  allMosques: "নিকটস্থ সব মসজিদসমূহ",
+  shareInfo: "আপনার এলাকার ঈদের জামাতের সঠিক সময় জানিয়ে অন্যদের সময় বাঁচাতে সাহায্য করুন",
+  addTime: "আরো জামাত বা সময় যুক্ত করুন",
 };
 
 // --- Helpers ---
@@ -523,16 +523,16 @@ export default function App() {
       {/* Quick Access Sidebar/Overlay */}
       <div className="shrink-0 h-[48px] relative z-[1000] bg-white border-b border-stone-100 overflow-x-auto no-scrollbar flex items-center px-4">
         <div className="flex items-center gap-2 min-w-max">
-          <div className="text-[10px] font-black text-slate-300 uppercase tracking-widest mr-2 border-r border-slate-100 pr-4">{t.allMosques}</div>
+          <div className="text-[10px] md:text-xs font-black text-slate-300 uppercase tracking-widest mr-2 border-r border-slate-100 pr-4">{t.allMosques}</div>
           {filteredMosques.map(m => (
             <button
               key={m.id}
               onClick={() => onMosqueClick(m.id)}
               className={cn(
-                "px-4 py-1.5 rounded-full text-xs font-bold transition-all border whitespace-nowrap",
+                "px-5 py-2 md:px-6 md:py-2.5 rounded-full text-xs md:text-sm font-bold transition-all border whitespace-nowrap",
                 selectedMosqueId === m.id 
-                  ? "bg-emerald-600 text-white border-emerald-600 shadow-lg shadow-emerald-100" 
-                  : "bg-white text-slate-500 border-slate-200/60 hover:border-emerald-200 hover:text-emerald-600"
+                  ? "bg-emerald-600 text-white border-emerald-600 shadow-xl shadow-emerald-100/50 scale-105" 
+                  : "bg-white text-slate-500 border-slate-200/60 hover:border-emerald-200 hover:text-emerald-600 hover:bg-emerald-50/30"
               )}
             >
               {m.name_bn}
@@ -560,34 +560,34 @@ export default function App() {
               <Tooltip permanent direction="top" offset={[0, -20]} className="custom-tooltip">{mosque.name_bn}</Tooltip>
               <Popup className="custom-popup" offset={[0, -10]}>
                 <div className="w-[280px] bg-white rounded-[24px] overflow-hidden">
-                  <div className="bg-emerald-600 p-4 text-white">
-                    <h3 className="font-black text-lg leading-tight tracking-tight">{mosque.name_bn}</h3>
+                  <div className="bg-emerald-600 p-5 text-white">
+                    <h3 className="font-black text-xl md:text-2xl leading-tight tracking-tight">{mosque.name_bn}</h3>
                     {mosque.distance !== undefined && (
-                      <div className="flex items-center gap-1.5 mt-2 text-emerald-100 font-bold text-[10px] uppercase tracking-wider">
-                        <Navigation size={10} />
+                      <div className="flex items-center gap-1.5 mt-2.5 text-emerald-100 font-bold text-[11px] md:text-xs uppercase tracking-widest">
+                        <Navigation size={12} />
                         {mosque.distance.toFixed(1)} {t.km} {t.away}
                       </div>
                     )}
                   </div>
 
-                  <div className="p-4 space-y-4">
-                    <div className="bg-slate-50 p-3 rounded-2xl border border-slate-100">
-                      <div className="text-[10px] uppercase tracking-widest text-slate-400 font-black mb-1.5 flex items-center gap-2">
-                        <Calendar size={12} className="text-emerald-500" />
+                  <div className="p-5 space-y-5">
+                    <div className="bg-slate-50 p-4 rounded-[20px] border border-slate-100">
+                      <div className="text-[10px] md:text-[11px] uppercase tracking-[0.15em] text-slate-400 font-black mb-2 flex items-center gap-2">
+                        <Calendar size={14} className="text-emerald-500" />
                         {t.date}
                       </div>
-                      <div className="text-sm font-black text-slate-700">{formatDateBn(mosque.eid_date)}</div>
+                      <div className="text-base md:text-lg font-black text-slate-800 tracking-tight">{formatDateBn(mosque.eid_date)}</div>
                     </div>
 
-                    <div className="space-y-2">
-                      <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
-                        <Clock size={12} className="text-emerald-500" />
+                    <div className="space-y-3">
+                      <p className="text-[10px] md:text-[11px] font-black text-slate-400 uppercase tracking-[0.15em] flex items-center gap-2">
+                        <Clock size={14} className="text-emerald-500" />
                         {t.namazTimes}
                       </p>
                       <div className="flex flex-wrap gap-2">
                         {mosque.namaz_times.map((time, idx) => (
-                          <div key={idx} className="relative bg-emerald-50 text-emerald-700 px-3 py-1.5 rounded-xl text-xs font-black border border-emerald-100 flex flex-col items-center min-w-[80px]">
-                            <span className="text-[8px] uppercase tracking-tighter opacity-50 mb-0.5">{getJamatLabel(idx)}</span>
+                          <div key={idx} className="bg-white border border-slate-200 px-3 py-1.5 rounded-xl text-xs md:text-sm font-black text-slate-700 shadow-sm flex items-center gap-2">
+                            <span className="text-emerald-600 text-[10px] border-r border-slate-100 pr-2">{getJamatLabel(idx).split(' ')[0]}</span>
                             {time}
                             <button onClick={(e) => {e.stopPropagation(); handleRemoveNamazTime(mosque.id, idx);}} className="absolute -top-1.5 -right-1.5 bg-red-500 text-white p-0.5 rounded-full shadow-md hover:bg-red-600 active:scale-90"><X size={10}/></button>
                           </div>
@@ -647,18 +647,18 @@ export default function App() {
             )}
             disabled={isPickingLocation}
           >
-            <Plus size={28} className="shrink-0" />
-            <span className="font-black text-base pt-0.5 tracking-tight">{t.addMosque}</span>
+            <Plus size={24} className="shrink-0 md:size-8" />
+            <span className="font-black text-sm md:text-lg pt-0.5 tracking-tight uppercase">{t.addMosque}</span>
           </button>
         </div>
 
         {/* Location Pick Helper */}
         <AnimatePresence>
           {isPickingLocation && (
-            <motion.div initial={{ y: 50, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: 50, opacity: 0 }} className="fixed bottom-24 left-1/2 -translate-x-1/2 z-[2000] bg-stone-900/90 text-white px-8 py-4 rounded-3xl shadow-2xl flex items-center gap-4 border border-white/10 backdrop-blur-xl">
-              <div className="bg-emerald-500 p-2 rounded-xl animate-pulse"><Navigation size={20}/></div>
-              <span className="text-sm font-bold tracking-tight">{t.pickInstruction}</span>
-              <button onClick={() => setIsPickingLocation(false)} className="ml-4 p-2 bg-white/10 hover:bg-white/20 rounded-full transition-colors"><X size={18}/></button>
+            <motion.div initial={{ y: 50, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: 50, opacity: 0 }} className="fixed bottom-24 left-1/2 -translate-x-1/2 z-[2000] bg-slate-900/95 text-white px-8 py-5 rounded-[28px] shadow-2xl flex items-center gap-4 border border-white/10 backdrop-blur-xl min-w-[300px] justify-center">
+              <div className="bg-emerald-500 p-2.5 rounded-xl animate-pulse shadow-lg shadow-emerald-500/20"><MapPin size={22}/></div>
+              <span className="text-sm md:text-base font-black tracking-tight">{t.pickInstruction}</span>
+              <button onClick={() => setIsPickingLocation(false)} className="ml-4 p-2.5 bg-white/10 hover:bg-white/20 rounded-full transition-colors"><X size={20}/></button>
             </motion.div>
           )}
         </AnimatePresence>
@@ -675,7 +675,10 @@ export default function App() {
             </h2>
           </div>
           <div className="flex items-center gap-6">
-            <a href="https://facebook.com/raihanstack" target="_blank" rel="noopener noreferrer" className="text-slate-400 hover:text-emerald-600 transition-colors"><Share2 size={20}/></a>
+            <a href="https://facebook.com/raihanstack" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-slate-400 hover:text-emerald-600 transition-colors group">
+              <Facebook size={18} className="group-hover:scale-110 transition-transform" />
+              <span className="text-[10px] md:text-xs font-bold uppercase tracking-widest hidden xs:block">Facebook</span>
+            </a>
             <div className="text-[11px] md:text-sm text-slate-600 font-bold uppercase tracking-wider">&copy; {new Date().getFullYear()} raihanstack</div>
           </div>
         </div>
@@ -689,11 +692,11 @@ export default function App() {
             <motion.div initial={{ scale: 0.9, opacity: 0, y: 20 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.9, opacity: 0, y: 20 }} className="relative w-full max-w-xl bg-white rounded-[32px] overflow-hidden shadow-2xl flex flex-col max-h-[90vh]">
               <div className="bg-emerald-600 p-8 text-white relative">
                 <button onClick={() => setIsAddModalOpen(false)} className="absolute top-8 right-8 p-2 bg-white/10 hover:bg-white/20 rounded-full transition-colors"><X size={20}/></button>
-                <div className="flex items-center gap-3 mb-2">
-                  <div className="bg-white p-2 rounded-xl text-emerald-600 shadow-xl"><Plus size={24}/></div>
-                  <h2 className="text-2xl font-black tracking-tight">{t.addMosque}</h2>
+                <div className="flex items-center gap-4 mb-3">
+                  <div className="bg-white p-3 rounded-2xl text-emerald-600 shadow-2xl scale-110"><Plus size={28}/></div>
+                  <h2 className="text-2xl md:text-3xl font-black tracking-tight">{t.addMosque}</h2>
                 </div>
-                <p className="text-emerald-100 text-sm font-medium opacity-80">{t.shareInfo}</p>
+                <p className="text-emerald-50/70 text-sm md:text-base font-bold leading-relaxed max-w-md">{t.shareInfo}</p>
                 
                 <div className="flex gap-2 mt-8">
                   {[1, 2, 3].map((step) => (
@@ -786,7 +789,7 @@ export default function App() {
                       </button>
                     ) : (
                       <button type="submit" disabled={isSubmitting} className="flex-[2] py-4 bg-emerald-600 text-white rounded-2xl font-bold hover:bg-emerald-700 shadow-xl shadow-emerald-100 transition-all active:scale-95 disabled:opacity-50">
-                        {isSubmitting ? "যুক্ত করা হচ্ছে..." : "তথ্য জমা দিন"}
+                        {isSubmitting ? "তথ্য যুক্ত করা হচ্ছে..." : t.submit}
                       </button>
                     )}
                   </div>
