@@ -180,7 +180,7 @@ export default function App() {
   const [selectedMosqueId, setSelectedMosqueId] = useState<number | null>(null);
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
+
   const [toast, setToast] = useState<{ message: string, type: 'success' | 'error' | 'info' } | null>(null);
 
   const showToast = (message: string, type: 'success' | 'error' | 'info' = 'info') => {
@@ -700,50 +700,8 @@ export default function App() {
           {userLocation && <Marker position={userLocation} icon={userLocationIcon} />}
         </MapContainer>
 
-        {/* Empty State Overlay */}
-        <AnimatePresence>
-          {filteredMosques.length === 0 && !isLoading && (
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              className="absolute inset-0 z-[100] flex items-center justify-center pointer-events-none"
-            >
-              <div className="bg-white/90 backdrop-blur-md p-8 rounded-[32px] shadow-2xl border border-slate-200 text-center max-w-sm pointer-events-auto">
-                <div className="bg-slate-100 w-20 h-20 rounded-3xl flex items-center justify-center mx-auto mb-6 text-slate-400">
-                  <Search size={40} />
-                </div>
-                <h3 className="text-xl font-black text-slate-900 mb-2">কোনো তথ্য পাওয়া যায়নি</h3>
-                <p className="text-slate-500 font-medium leading-relaxed">
-                  আপনার অনুসন্ধান বা নির্বাচিত ফিল্টার অনুযায়ী কোনো মসজিদ খুঁজে পাওয়া যায়নি। দয়া করে অন্য কিছু লিখে চেষ্টা করুন।
-                </p>
-                <button
-                  onClick={() => { setSearchQuery(''); setDateFilter(''); setDistanceFilter(null); }}
-                  className="mt-6 px-8 py-3 bg-emerald-600 text-white rounded-2xl font-bold hover:bg-emerald-700 transition-all active:scale-95 shadow-lg shadow-emerald-200"
-                >
-                  ফিল্টার রিসেট করুন
-                </button>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
 
-        {/* Loading Indicator */}
-        <AnimatePresence>
-          {isLoading && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="absolute top-4 left-1/2 -translate-x-1/2 z-[1500]"
-            >
-              <div className="bg-white/95 backdrop-blur-xl px-6 py-3 rounded-2xl shadow-xl border border-slate-200 flex items-center gap-3">
-                <div className="w-5 h-5 border-3 border-emerald-600 border-t-transparent rounded-full animate-spin"></div>
-                <span className="text-sm font-black text-slate-700 tracking-tight">লোড হচ্ছে...</span>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+
 
         {/* Floating Action Buttons */}
         <div className="fixed bottom-20 right-4 md:right-8 flex flex-col items-end gap-3 z-[1500]">
