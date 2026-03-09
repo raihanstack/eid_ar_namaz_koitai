@@ -41,8 +41,8 @@ interface Mosque {
 // --- Professional Bengali Translations ---
 const t = {
   title: "ঈদের নামাজ কয়টায়",
-  search: "মসজিদের নাম দিয়ে খুঁজুন...",
-  addMosque: "মসজিদ যুক্ত করুন",
+  search: "মসজিদ বা এলাকা লিখে খুঁজুন...",
+  addMosque: "নামাজের সময় যুক্ত করুন",
   myLocation: "আমার অবস্থান",
   anyDistance: "যেকোনো দূরত্ব",
   km: "কিমি",
@@ -493,56 +493,37 @@ export default function App() {
   return (
     <div className="h-[100dvh] flex flex-col bg-stone-50 font-sans text-stone-900 overflow-hidden">
       {/* Navbar */}
-      <nav className="shrink-0 h-[56px] relative z-[2000] bg-white/95 backdrop-blur-xl border-b border-stone-200 px-4 flex items-center justify-between shadow-sm">
-        <div className="flex items-center gap-2 shrink-0">
-          <div className="bg-emerald-600 p-1.5 rounded-xl text-white shadow-emerald-100 shadow-lg">
-            <img src="/favicon.png" className="w-6 h-6 object-contain invert brightness-0" alt="logo" />
+      <nav className="shrink-0 h-[60px] md:h-[72px] relative z-[2000] bg-white/95 backdrop-blur-xl border-b border-slate-200 px-4 flex items-center justify-between gap-4 shadow-sm">
+        <div className="flex items-center gap-3 shrink-0">
+          <div className="bg-emerald-600/10 p-2 rounded-xl text-emerald-600 shrink-0">
+            <img src="/favicon.png" className="w-8 h-8 object-contain" alt="logo" />
           </div>
           <div className="flex flex-col">
-            <h1 className="text-base md:text-lg font-black tracking-tight text-emerald-900 leading-none">
+            <h1 className="text-base md:text-xl font-black tracking-tight text-slate-900 leading-none">
               {t.title}
             </h1>
-            <span className="text-[10px] text-stone-400 font-bold uppercase tracking-wider mt-0.5">সব মসজিদের অবস্থান</span>
+            <span className="hidden xs:block text-[10px] text-slate-400 font-bold uppercase tracking-wider mt-1">নামাজের সময় ও স্থান</span>
           </div>
         </div>
 
-        <div className="flex-1 max-w-2xl mx-6 hidden sm:flex items-center gap-2">
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-stone-400 w-4 h-4" />
+        <div className="flex items-center justify-end flex-1 max-w-[180px] xs:max-w-[240px] sm:max-w-xs md:max-w-md ml-auto">
+          <div className="relative w-full">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4" />
             <input
               type="text"
               placeholder={t.search}
-              className="w-full pl-10 pr-4 py-2 bg-stone-100 border-none rounded-2xl text-sm focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 transition-all font-medium"
+              className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200/60 rounded-2xl text-sm focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500/50 transition-all font-medium text-slate-700 outline-none"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
           </div>
-          
-          <BnDateInput
-            className="px-4 py-2 bg-stone-100 border-none rounded-2xl text-sm focus:ring-4 focus:ring-emerald-500/10 transition-all font-bold text-stone-600"
-            value={dateFilter}
-            onChange={(val: string) => setDateFilter(val)}
-          />
-        </div>
-
-        <div className="flex items-center gap-2">
-          <button 
-            onClick={() => setIsMobileFilterOpen(true)}
-            className="sm:hidden p-2.5 bg-stone-100 rounded-xl text-stone-500"
-          >
-            <Search size={20} />
-          </button>
-          <button className="flex items-center gap-2 px-4 py-2 bg-emerald-50 text-emerald-700 rounded-xl font-bold text-xs border border-emerald-100 uppercase tracking-widest transition-all hover:bg-emerald-100">
-            <Globe size={14} />
-            বাংলা
-          </button>
         </div>
       </nav>
 
       {/* Quick Access Sidebar/Overlay */}
       <div className="shrink-0 h-[48px] relative z-[1000] bg-white border-b border-stone-100 overflow-x-auto no-scrollbar flex items-center px-4">
         <div className="flex items-center gap-2 min-w-max">
-          <div className="text-[10px] font-black text-stone-300 uppercase tracking-widest mr-2 border-r border-stone-100 pr-4">{t.allMosques}</div>
+          <div className="text-[10px] font-black text-slate-300 uppercase tracking-widest mr-2 border-r border-slate-100 pr-4">{t.allMosques}</div>
           {filteredMosques.map(m => (
             <button
               key={m.id}
@@ -551,7 +532,7 @@ export default function App() {
                 "px-4 py-1.5 rounded-full text-xs font-bold transition-all border whitespace-nowrap",
                 selectedMosqueId === m.id 
                   ? "bg-emerald-600 text-white border-emerald-600 shadow-lg shadow-emerald-100" 
-                  : "bg-white text-stone-500 border-stone-100 hover:border-emerald-200"
+                  : "bg-white text-slate-500 border-slate-200/60 hover:border-emerald-200 hover:text-emerald-600"
               )}
             >
               {m.name_bn}
@@ -580,7 +561,7 @@ export default function App() {
               <Popup className="custom-popup" offset={[0, -10]}>
                 <div className="w-[280px] bg-white rounded-[24px] overflow-hidden">
                   <div className="bg-emerald-600 p-4 text-white">
-                    <h3 className="font-bold text-lg leading-tight">{mosque.name_bn}</h3>
+                    <h3 className="font-black text-lg leading-tight tracking-tight">{mosque.name_bn}</h3>
                     {mosque.distance !== undefined && (
                       <div className="flex items-center gap-1.5 mt-2 text-emerald-100 font-bold text-[10px] uppercase tracking-wider">
                         <Navigation size={10} />
@@ -590,16 +571,16 @@ export default function App() {
                   </div>
 
                   <div className="p-4 space-y-4">
-                    <div className="bg-stone-50 p-3 rounded-2xl border border-stone-100">
-                      <div className="text-[10px] uppercase tracking-widest text-stone-400 font-black mb-1.5 flex items-center gap-2">
+                    <div className="bg-slate-50 p-3 rounded-2xl border border-slate-100">
+                      <div className="text-[10px] uppercase tracking-widest text-slate-400 font-black mb-1.5 flex items-center gap-2">
                         <Calendar size={12} className="text-emerald-500" />
                         {t.date}
                       </div>
-                      <div className="text-sm font-black text-stone-700">{formatDateBn(mosque.eid_date)}</div>
+                      <div className="text-sm font-black text-slate-700">{formatDateBn(mosque.eid_date)}</div>
                     </div>
 
                     <div className="space-y-2">
-                      <p className="text-[10px] font-black text-stone-400 uppercase tracking-widest flex items-center gap-2">
+                      <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
                         <Clock size={12} className="text-emerald-500" />
                         {t.namazTimes}
                       </p>
@@ -652,17 +633,17 @@ export default function App() {
         <div className="fixed bottom-20 right-4 md:right-8 flex flex-col items-end gap-3 z-[1500]">
           <button
             onClick={getUserLocation}
-            className="h-12 md:h-14 bg-white text-emerald-700 rounded-full shadow-2xl hover:bg-stone-50 transition-all active:scale-95 border border-emerald-100 flex items-center gap-3 px-5 group"
+            className="h-12 md:h-14 bg-white text-slate-700 rounded-full shadow-xl hover:bg-slate-50 transition-all active:scale-95 border border-slate-200 flex items-center gap-3 px-5 group"
           >
-            <Navigation size={22} className="group-hover:rotate-12 transition-transform" />
-            <span className="text-sm font-black pt-0.5">{t.myLocation}</span>
+            <Navigation size={22} className="text-emerald-600 group-hover:rotate-12 transition-transform" />
+            <span className="text-sm font-bold pt-0.5">{t.myLocation}</span>
           </button>
           
           <button
             onClick={() => setIsPickingLocation(true)}
             className={cn(
-              "h-14 md:h-16 rounded-full shadow-2xl transition-all active:scale-95 flex items-center justify-center gap-3 px-6",
-              isPickingLocation ? "bg-stone-200 text-stone-400 cursor-not-allowed" : "bg-emerald-600 text-white hover:bg-emerald-700"
+              "h-14 md:h-16 rounded-full shadow-2xl transition-all active:scale-95 flex items-center justify-center gap-3 px-8",
+              isPickingLocation ? "bg-slate-200 text-slate-400 cursor-not-allowed" : "bg-emerald-600 text-white hover:bg-emerald-700 shadow-emerald-200"
             )}
             disabled={isPickingLocation}
           >
@@ -683,19 +664,19 @@ export default function App() {
         </AnimatePresence>
       </div>
 
-      <footer className="shrink-0 h-[50px] bg-white border-t border-stone-100 flex items-center px-4 relative z-[2000]">
+      <footer className="shrink-0 h-[60px] md:h-[70px] bg-white border-t border-slate-100 flex items-center px-4 relative z-[2000]">
         <div className="max-w-7xl mx-auto w-full flex justify-between items-center">
-          <div className="flex items-center gap-2">
-            <div className="bg-emerald-600 p-1 rounded-md text-white shadow-sm shadow-emerald-100">
-               <img src="/favicon.png" className="w-3.5 h-3.5 object-contain invert brightness-0" alt="logo" />
+          <div className="flex items-center gap-2.5">
+            <div className="bg-emerald-600/10 p-1.5 rounded-lg text-emerald-600">
+               <img src="/favicon.png" className="w-5 h-5 md:w-6 md:h-6 object-contain" alt="logo" />
             </div>
-            <h2 className="text-[10px] md:text-xs font-black text-stone-800 tracking-tight flex items-center gap-1">
+            <h2 className="text-xs md:text-sm font-black text-slate-900 tracking-tight flex items-center gap-1.5">
               <span className="text-emerald-600">ঈদের</span> নামাজ কয়টায়
             </h2>
           </div>
-          <div className="flex items-center gap-4">
-            <a href="https://facebook.com/raihanstack" target="_blank" rel="noopener noreferrer" className="text-stone-300 hover:text-emerald-600 transition-colors"><Share2 size={16}/></a>
-            <div className="text-[10px] text-stone-300 font-black uppercase tracking-widest">&copy; {new Date().getFullYear()} raihanstack</div>
+          <div className="flex items-center gap-6">
+            <a href="https://facebook.com/raihanstack" target="_blank" rel="noopener noreferrer" className="text-slate-400 hover:text-emerald-600 transition-colors"><Share2 size={20}/></a>
+            <div className="text-[11px] md:text-sm text-slate-600 font-bold uppercase tracking-wider">&copy; {new Date().getFullYear()} raihanstack</div>
           </div>
         </div>
       </footer>
@@ -793,9 +774,9 @@ export default function App() {
                     </motion.div>
                   )}
 
-                  <div className="flex gap-3 pt-8 border-t border-stone-100">
+                  <div className="flex gap-3 pt-8 border-t border-slate-100">
                     {activeStep > 1 && (
-                      <button type="button" onClick={() => setActiveStep(prev => prev - 1)} className="flex-1 py-4 bg-stone-100 text-stone-600 rounded-2xl font-bold hover:bg-stone-200 transition-all active:scale-95 flex items-center justify-center gap-2">
+                      <button type="button" onClick={() => setActiveStep(prev => prev - 1)} className="flex-1 py-4 bg-slate-100 text-slate-600 rounded-2xl font-bold hover:bg-slate-200 transition-all active:scale-95 flex items-center justify-center gap-2">
                         <ChevronLeft size={20}/> পিছনে
                       </button>
                     )}
