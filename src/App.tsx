@@ -50,7 +50,7 @@ interface Mosque {
 // --- Professional Bengali Translations ---
 const t = {
   title: "ঈদের নামাজ কয়টায়",
-  search: "মসজিদ বা এলাকা লিখে অনুসন্ধান করুন...",
+  search: "অনুসন্ধান করুন...",
   addMosque: "নামাজের সময়সূচী যুক্ত করুন",
   myLocation: "আমার বর্তমান অবস্থান",
   anyDistance: "যেকোনো দূরত্ব",
@@ -133,6 +133,28 @@ function MapController({ isPickingLocation, onLocationPick, selectedMosqueId, mo
   return null;
 }
 
+// --- Components ---
+
+const Toast = ({ message, type, onClose }: { message: string, type: 'success' | 'error' | 'info', onClose: () => void }) => (
+  <motion.div
+    initial={{ opacity: 0, y: 50, scale: 0.9 }}
+    animate={{ opacity: 1, y: 0, scale: 1 }}
+    exit={{ opacity: 0, y: 20, scale: 0.9 }}
+    className={cn(
+      "fixed bottom-28 left-1/2 -translate-x-1/2 z-[5000] px-6 py-3.5 rounded-2xl shadow-2xl flex items-center gap-3 border backdrop-blur-md min-w-[280px] max-w-[90vw]",
+      type === 'success' ? "bg-emerald-600/95 border-emerald-400/30 text-white" :
+        type === 'error' ? "bg-rose-600/95 border-rose-400/30 text-white" :
+          "bg-slate-900/95 border-slate-700/30 text-white"
+    )}
+  >
+    {type === 'success' && <CheckCircle size={20} className="shrink-0" />}
+    {type === 'error' && <AlertCircle size={20} className="shrink-0" />}
+    {type === 'info' && <Info size={20} className="shrink-0" />}
+    <span className="text-sm font-bold tracking-tight">{message}</span>
+    <button onClick={onClose} className="ml-auto p-1 hover:bg-white/10 rounded-lg transition-colors"><X size={16} /></button>
+  </motion.div>
+);
+
 const BnDateInput = ({ value, onChange, placeholder, className }: any) => {
   return (
     <input
@@ -158,6 +180,13 @@ export default function App() {
   const [selectedMosqueId, setSelectedMosqueId] = useState<number | null>(null);
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [toast, setToast] = useState<{ message: string, type: 'success' | 'error' | 'info' } | null>(null);
+
+  const showToast = (message: string, type: 'success' | 'error' | 'info' = 'info') => {
+    setToast({ message, type });
+    setTimeout(() => setToast(null), 3000);
+  };
   const [newMosque, setNewMosque] = useState<{
     name_en: string;
     name_bn: string;
@@ -212,7 +241,7 @@ export default function App() {
         `)
         .eq('status', 'approved');
 
-      if (error) throw error;
+      if (error) showToast(t.error, 'error');
 
       const formatted = data.map((m: any) => {
         const trueVotes = m.votes?.filter((v: any) => v.is_true === 1 || v.is_true === true).length || 0;
@@ -273,14 +302,14 @@ export default function App() {
       .from('namaz_times')
       .insert([{ mosque_id: mosqueId, namaz_time: time }]);
 
-    if (error) alert(t.error);
+    if (error) showToast(t.error, 'error');
   };
 
   const handleAddMosque = async (e: React.FormEvent) => {
     e.preventDefault();
     const cleanedTimes = newMosque.namaz_times.filter(t => t.trim() !== '');
     if (cleanedTimes.length === 0) {
-      alert('অনুগ্রহ করে অন্তত একটি নামাজের সময় যোগ করুন');
+      showToast('অনুগ্রহ করে অন্তত একটি নামাজের সময় যোগ করুন', 'info');
       return;
     }
 
@@ -317,7 +346,7 @@ export default function App() {
       fetchMosques();
     } catch (err) {
       console.error('Submission failed:', err);
-      alert(t.error);
+      showToast(t.error, 'error');
     } finally {
       setIsSubmitting(false);
     }
@@ -347,7 +376,7 @@ export default function App() {
   const handleVote = async (mosqueId: number, isTrue: boolean) => {
     const votedKey = `voted_${mosqueId}`;
     if (localStorage.getItem(votedKey)) {
-      alert('আপনি আগেই এই মসজিদে ভোট দিয়েছেন।');
+      showToast('আপনি আগেই এই মসজিদে ভোট দিয়েছেন।', 'info');
       return;
     }
 
@@ -360,12 +389,12 @@ export default function App() {
           is_true: isTrue ? 1 : 0
         }]);
 
-      if (error) throw error;
+      if (error) showToast(t.error, 'error');
       localStorage.setItem(votedKey, 'true');
       fetchMosques();
     } catch (err) {
       console.error('Voting failed:', err);
-      alert(t.error);
+      showToast(t.error, 'error');
     }
   };
 
@@ -382,7 +411,7 @@ export default function App() {
           reason: 'Reported'
         }]);
 
-      if (error) throw error;
+      if (error) showToast(t.error, 'error');
       localStorage.setItem(reportedKey, 'true');
 
       const { count, error: countError } = await supabase
@@ -414,7 +443,7 @@ export default function App() {
       fetchMosques();
     } catch (err) {
       console.error('Removal failed:', err);
-      alert(t.error);
+      showToast(t.error, 'error');
     }
   };
 
@@ -439,7 +468,7 @@ export default function App() {
       }
     } catch (err) {
       console.error('Time removal failed:', err);
-      alert(t.error);
+      showToast(t.error, 'error');
     }
   };
 
@@ -466,7 +495,7 @@ export default function App() {
 
   const getUserLocation = () => {
     if (!navigator.geolocation) {
-      alert('আপনার ব্রাউজারে জিওলোকেশন সাপোর্ট করে না');
+      showToast('আপনার ব্রাউজারে জিওলোকেশন সাপোর্ট করে না', 'error');
       return;
     }
 
@@ -474,7 +503,7 @@ export default function App() {
       (pos) => setUserLocation([pos.coords.latitude, pos.coords.longitude]),
       (err) => {
         console.error("Geolocation error:", err);
-        alert('আপনার অবস্থান খুঁজে পাওয়া যায়নি');
+        showToast('আপনার অবস্থান খুঁজে পাওয়া যায়নি', 'error');
       }
     );
   };
@@ -490,7 +519,10 @@ export default function App() {
       <div class="marker-flag-container">
         <div class="marker-flag-pulse"></div>
         <div class="marker-flag-main">
-          <img src="/favicon.png" class="w-6 h-6 object-contain" alt="mosque" />
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 2L4 7V17L12 22L20 17V7L12 2Z" fill="white" stroke="#10B981" stroke-width="2"/>
+            <path d="M12 6V18M8 10V14M16 10V14" stroke="#10B981" stroke-width="2" stroke-linecap="round"/>
+          </svg>
         </div>
       </div>
     `,
@@ -514,29 +546,47 @@ export default function App() {
   return (
     <div className="h-[100dvh] flex flex-col bg-stone-50 font-sans text-stone-900 overflow-hidden">
       {/* Navbar */}
-      <nav className="shrink-0 h-[60px] md:h-[72px] relative z-[2000] bg-white/95 backdrop-blur-xl border-b border-slate-200 px-4 flex items-center justify-between gap-4 shadow-sm">
-        <div className="flex items-center gap-3 shrink-0">
-          <div className="bg-emerald-600/10 p-2 rounded-xl text-emerald-600 shrink-0">
-            <img src="/favicon.png" className="w-8 h-8 object-contain" alt="logo" />
-          </div>
-          <div className="flex flex-col">
-            <h1 className="text-base md:text-xl font-black tracking-tight text-slate-900 leading-none">
-              {t.title}
-            </h1>
-            <span className="hidden xs:block text-[10px] text-slate-400 font-bold uppercase tracking-wider mt-1">নামাজের সময় ও স্থান</span>
+      <nav className="shrink-0 h-[60px] md:h-[72px] relative z-[2000] bg-white/70 backdrop-blur-2xl border-b border-slate-200/50 px-4 md:px-8 flex items-center justify-between gap-4 shadow-[0_1px_2px_0_rgba(0,0,0,0.05)]">
+        <div className="flex items-center gap-3 shrink-0 group cursor-pointer">
+          <div className="flex items-center gap-3">
+            <motion.div
+              whileHover={{ scale: 1.05, rotate: 5 }}
+              whileTap={{ scale: 0.95 }}
+              className="bg-emerald-50 p-2 rounded-xl text-emerald-600 shadow-sm border border-emerald-100 shrink-0"
+            >
+              <img src="/favicon.png" className="w-6 h-6 md:w-8 md:h-8 object-contain" alt="logo" />
+            </motion.div>
+            <div className="flex flex-col">
+              <h1 className="text-base md:text-2xl font-black tracking-tight text-slate-900 leading-none flex items-center gap-1.5">
+                <span className="text-emerald-600">ঈদের</span> নামাজ কয়টায়
+              </h1>
+              <div className="hidden xs:flex items-center gap-2 mt-1">
+                <span className="w-1 h-1 bg-emerald-500 rounded-full animate-pulse"></span>
+                <span className="text-[9px] text-slate-400 font-bold uppercase tracking-[0.1em]">নামাজের সময় ও স্থান</span>
+              </div>
+            </div>
           </div>
         </div>
 
-        <div className="flex items-center justify-end flex-1 max-w-[180px] xs:max-w-[240px] sm:max-w-xs md:max-w-md ml-auto">
-          <div className="relative w-full">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4" />
+        <div className="flex items-center justify-end flex-1 max-w-[200px] xs:max-w-[280px] sm:max-w-xs md:max-w-md ml-auto">
+          <div className="relative w-full group">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4 group-focus-within:text-emerald-500 transition-colors" />
             <input
               type="text"
               placeholder={t.search}
-              className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200/60 rounded-2xl text-sm focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500/50 transition-all font-medium text-slate-700 outline-none"
+              className="w-full pl-12 pr-10 py-3 bg-slate-100/50 border border-transparent rounded-2xl text-sm focus:bg-white focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500/50 transition-all font-bold text-slate-700 outline-none placeholder:text-slate-400 placeholder:font-medium shadow-inner"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
+            {searchQuery && (
+              <button
+                onClick={() => setSearchQuery('')}
+                className="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 hover:bg-slate-200/50 rounded-full text-slate-400 hover:text-slate-600 transition-all active:scale-90"
+                title="Clear search"
+              >
+                <X size={16} />
+              </button>
+            )}
           </div>
         </div>
       </nav>
@@ -650,6 +700,51 @@ export default function App() {
           {userLocation && <Marker position={userLocation} icon={userLocationIcon} />}
         </MapContainer>
 
+        {/* Empty State Overlay */}
+        <AnimatePresence>
+          {filteredMosques.length === 0 && !isLoading && (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="absolute inset-0 z-[100] flex items-center justify-center pointer-events-none"
+            >
+              <div className="bg-white/90 backdrop-blur-md p-8 rounded-[32px] shadow-2xl border border-slate-200 text-center max-w-sm pointer-events-auto">
+                <div className="bg-slate-100 w-20 h-20 rounded-3xl flex items-center justify-center mx-auto mb-6 text-slate-400">
+                  <Search size={40} />
+                </div>
+                <h3 className="text-xl font-black text-slate-900 mb-2">কোনো তথ্য পাওয়া যায়নি</h3>
+                <p className="text-slate-500 font-medium leading-relaxed">
+                  আপনার অনুসন্ধান বা নির্বাচিত ফিল্টার অনুযায়ী কোনো মসজিদ খুঁজে পাওয়া যায়নি। দয়া করে অন্য কিছু লিখে চেষ্টা করুন।
+                </p>
+                <button
+                  onClick={() => { setSearchQuery(''); setDateFilter(''); setDistanceFilter(null); }}
+                  className="mt-6 px-8 py-3 bg-emerald-600 text-white rounded-2xl font-bold hover:bg-emerald-700 transition-all active:scale-95 shadow-lg shadow-emerald-200"
+                >
+                  ফিল্টার রিসেট করুন
+                </button>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Loading Indicator */}
+        <AnimatePresence>
+          {isLoading && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="absolute top-4 left-1/2 -translate-x-1/2 z-[1500]"
+            >
+              <div className="bg-white/95 backdrop-blur-xl px-6 py-3 rounded-2xl shadow-xl border border-slate-200 flex items-center gap-3">
+                <div className="w-5 h-5 border-3 border-emerald-600 border-t-transparent rounded-full animate-spin"></div>
+                <span className="text-sm font-black text-slate-700 tracking-tight">লোড হচ্ছে...</span>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
         {/* Floating Action Buttons */}
         <div className="fixed bottom-20 right-4 md:right-8 flex flex-col items-end gap-3 z-[1500]">
           <button
@@ -684,7 +779,7 @@ export default function App() {
           )}
         </AnimatePresence>
       </div>
-      <footer className="shrink-0 h-[60px] md:h-[70px] bg-white border-t border-slate-100 flex items-center px-4 relative z-[2000]">
+      <footer className="shrink-0 h-[44px] md:h-[60px] bg-white border-t border-slate-100 flex items-center px-4 relative z-[2000]">
         <div className="max-w-7xl mx-auto w-full flex justify-between items-center">
           <div className="flex items-center gap-2.5">
             <div className="bg-emerald-600/10 p-1.5 rounded-lg text-emerald-600">
@@ -856,6 +951,15 @@ export default function App() {
         .marker-flag-pulse { position: absolute; width: 60px; height: 60px; background: rgba(16, 185, 129, 0.3); border-radius: 50%; animation: pulse 2s infinite; z-index: 1; }
         @keyframes pulse { 0% { transform: scale(0.5); opacity: 0.8; } 100% { transform: scale(1.5); opacity: 0; } }
       `}</style>
+      <AnimatePresence>
+        {toast && (
+          <Toast
+            message={toast.message}
+            type={toast.type}
+            onClose={() => setToast(null)}
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 }
