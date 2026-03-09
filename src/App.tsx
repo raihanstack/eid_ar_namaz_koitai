@@ -2,6 +2,15 @@ import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, useMap, Tooltip } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
+
+// --- Fix Leaflet Default Icon issue in production ---
+delete (L.Icon.Default.prototype as any)._getIconUrl;
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
+  iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
+  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+});
+
 import {
   Search, Plus, Navigation, ThumbsUp, ThumbsDown,
   MapPin, Clock, Calendar, CheckCircle, X,
@@ -490,6 +499,18 @@ export default function App() {
     iconAnchor: [20, 20],
   });
 
+  const userLocationIcon = L.divIcon({
+    html: `
+      <div class="user-location-marker">
+        <div class="user-location-pulse"></div>
+        <div class="user-location-dot"></div>
+      </div>
+    `,
+    className: 'custom-user-icon',
+    iconSize: [24, 24],
+    iconAnchor: [12, 12],
+  });
+
   return (
     <div className="h-[100dvh] flex flex-col bg-stone-50 font-sans text-stone-900 overflow-hidden">
       {/* Navbar */}
@@ -626,7 +647,7 @@ export default function App() {
               </Popup>
             </Marker>
           ))}
-          {userLocation && <Marker position={userLocation} />}
+          {userLocation && <Marker position={userLocation} icon={userLocationIcon} />}
         </MapContainer>
 
         {/* Floating Action Buttons */}
