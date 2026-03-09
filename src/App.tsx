@@ -481,7 +481,7 @@ export default function App() {
       <div class="marker-flag-container">
         <div class="marker-flag-pulse"></div>
         <div class="marker-flag-main">
-          <img src="../src/assets/favicon.png" class="w-6 h-6 object-contain" alt="mosque" />
+          <img src="/favicon.png" class="w-6 h-6 object-contain" alt="mosque" />
         </div>
       </div>
     `,
@@ -496,7 +496,7 @@ export default function App() {
       <nav className="shrink-0 h-[60px] md:h-[72px] relative z-[2000] bg-white/95 backdrop-blur-xl border-b border-slate-200 px-4 flex items-center justify-between gap-4 shadow-sm">
         <div className="flex items-center gap-3 shrink-0">
           <div className="bg-emerald-600/10 p-2 rounded-xl text-emerald-600 shrink-0">
-            <img src="../src/assets/favicon.png" className="w-8 h-8 object-contain" alt="logo" />
+            <img src="/favicon.png" className="w-8 h-8 object-contain" alt="logo" />
           </div>
           <div className="flex flex-col">
             <h1 className="text-base md:text-xl font-black tracking-tight text-slate-900 leading-none">
@@ -667,7 +667,7 @@ export default function App() {
         <div className="max-w-7xl mx-auto w-full flex justify-between items-center">
           <div className="flex items-center gap-2.5">
             <div className="bg-emerald-600/10 p-1.5 rounded-lg text-emerald-600">
-              <img src="../src/assets/favicon.png" className="w-5 h-5 md:w-6 md:h-6 object-contain" alt="logo" />
+              <img src="/favicon.png" className="w-5 h-5 md:w-6 md:h-6 object-contain" alt="logo" />
             </div>
             <h2 className="text-xs md:text-sm font-black text-slate-900 tracking-tight flex items-center gap-1.5">
               <span className="text-emerald-600">ঈদের</span> নামাজ কয়টায়
