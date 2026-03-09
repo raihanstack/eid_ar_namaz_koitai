@@ -15,7 +15,6 @@ import {
   CheckCircle,
   ChevronRight,
   ChevronLeft,
-  Flag,
   MoonStar,
   Trash2,
   AlertTriangle,
@@ -273,17 +272,14 @@ export default function App() {
   };
 
   const handleVote = async (mosqueId: number, isTrue: boolean) => {
-    const votedKey = `voted_${mosqueId}`;
-    if (localStorage.getItem(votedKey)) return;
-
     const res = await fetch('/api/votes', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ mosque_id: mosqueId, is_true: isTrue, voter_id: voterId })
     });
 
-    if (res.ok) {
-      localStorage.setItem(votedKey, 'true');
+    if (!res.ok) {
+      alert(t.error);
     }
   };
 
@@ -392,10 +388,10 @@ export default function App() {
 
   const mosqueIcon = L.divIcon({
     html: `
-      <div class="marker-flag-container">
-        <div class="marker-flag-pulse"></div>
-        <div class="marker-flag-main">
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18"/><path d="M6 21V9a3 3 0 0 1 3-3h6a3 3 0 0 1 3 3v12"/><path d="M9 21v-4a3 3 0 0 1 6 0v4"/><path d="M12 6V3"/><path d="M10 3h4"/></svg>
+      <div class="marker-moon-container">
+        <div class="marker-moon-pulse"></div>
+        <div class="marker-moon-main">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9"/><path d="M20 3v4"/><path d="M22 5h-4"/></svg>
         </div>
       </div>
     `,
@@ -579,7 +575,7 @@ export default function App() {
 
                     <div className="pt-4 border-t border-stone-100">
                       <div className="flex items-center justify-between mb-3">
-                        <p className="text-[10px] font-bold text-stone-400 uppercase tracking-widest">{t.verify}</p>
+                        <p className="text-[11px] font-bold text-stone-500 uppercase tracking-widest">{t.verify}</p>
                       </div>
                       <div className="grid grid-cols-2 gap-2 mb-4">
                         <button 
@@ -602,26 +598,16 @@ export default function App() {
                       <div className="flex items-center gap-2">
                         <button 
                           onClick={() => handleVote(mosque.id, true)}
-                          className={cn(
-                            "flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl transition-all font-bold text-xs",
-                            localStorage.getItem(`voted_${mosque.id}`) 
-                              ? "bg-stone-100 text-stone-400 cursor-not-allowed" 
-                              : "bg-emerald-50 text-emerald-700 hover:bg-emerald-100 active:scale-95 border border-emerald-100"
-                          )}
+                          className="flex-1 flex items-center justify-center gap-2 py-3.5 rounded-xl transition-all font-bold text-sm bg-emerald-50 text-emerald-700 hover:bg-emerald-100 active:scale-95 border border-emerald-100 shadow-sm"
                         >
-                          <ThumbsUp size={14} />
+                          <ThumbsUp size={16} />
                           {t.yes} ({mosque.true_votes})
                         </button>
                         <button 
                           onClick={() => handleVote(mosque.id, false)}
-                          className={cn(
-                            "flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl transition-all font-bold text-xs",
-                            localStorage.getItem(`voted_${mosque.id}`) 
-                              ? "bg-stone-100 text-stone-400 cursor-not-allowed" 
-                              : "bg-red-50 text-red-700 hover:bg-red-100 active:scale-95 border border-red-100"
-                          )}
+                          className="flex-1 flex items-center justify-center gap-2 py-3.5 rounded-xl transition-all font-bold text-sm bg-red-50 text-red-700 hover:bg-red-100 active:scale-95 border border-red-100 shadow-sm"
                         >
-                          <ThumbsDown size={14} />
+                          <ThumbsDown size={16} />
                           {t.no} ({mosque.false_votes})
                         </button>
                       </div>

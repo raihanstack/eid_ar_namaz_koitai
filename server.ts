@@ -35,7 +35,6 @@ db.exec(`
     mosque_id INTEGER,
     is_true INTEGER, -- 1 for True, 0 for False
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    UNIQUE(voter_id, mosque_id),
     FOREIGN KEY(mosque_id) REFERENCES mosques(id) ON DELETE CASCADE
   );
 
@@ -129,7 +128,7 @@ app.post('/api/votes', (req, res) => {
   }
 
   try {
-    db.prepare('INSERT OR REPLACE INTO votes (voter_id, mosque_id, is_true) VALUES (?, ?, ?)').run(voter_id, mosque_id, is_true ? 1 : 0);
+    db.prepare('INSERT INTO votes (voter_id, mosque_id, is_true) VALUES (?, ?, ?)').run(voter_id, mosque_id, is_true ? 1 : 0);
     
     const counts: any = db.prepare(`
       SELECT 

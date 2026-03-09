@@ -6,14 +6,14 @@
 }
 
 /* Custom Marker Styles */
-.marker-flag-container {
+.marker-moon-container {
   display: flex;
   align-items: center;
   justify-content: center;
   position: relative;
 }
 
-.marker-flag-pulse {
+.marker-moon-pulse {
   position: absolute;
   width: 48px;
   height: 48px;
@@ -33,7 +33,7 @@
   }
 }
 
-.marker-flag-main {
+.marker-moon-main {
   position: relative;
   background: #059669;
   color: white;
@@ -45,12 +45,12 @@
   transition: all 0.3s ease;
 }
 
-.marker-flag-main:hover {
+.marker-moon-main:hover {
   transform: translateY(-24px) scale(1.1);
   background: #047857;
 }
 
-.marker-flag-main svg {
+.marker-moon-main svg {
   filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));
 }
 
