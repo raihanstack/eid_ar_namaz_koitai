@@ -31,14 +31,15 @@ function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-const supabaseUrl = (import.meta as any).env.VITE_SUPABASE_URL;
-const supabaseKey = (import.meta as any).env.VITE_SUPABASE_ANON_KEY;
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
 if (!supabaseUrl || !supabaseKey) {
-  console.warn('Missing Supabase credentials in .env');
+  console.error('CRITICAL: Missing Supabase credentials in .env. Realtime and Database features will NOT work.');
 }
 
 const supabase = createClient(supabaseUrl || '', supabaseKey || '');
+console.log('Supabase client initialized');
 
 // --- Types ---
 interface Mosque {
@@ -197,23 +198,30 @@ export default function App() {
 
     fetchMosques();
 
+    console.log('Setting up Supabase Realtime subscription...');
     const mosquesSubscription = supabase
-      .channel('any')
+      .channel('schema-db-changes')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'mosques' }, (payload) => {
-        if (payload.eventType === 'INSERT') {
-          // Note: Full mosque data with times/votes might need a refresh or secondary fetch
-          fetchMosques();
-        } else if (payload.eventType === 'DELETE') {
-          setMosques(prev => prev.filter(m => m.id !== payload.old.id));
-        } else if (payload.eventType === 'UPDATE') {
-          fetchMosques();
-        }
+        console.log('Realtime Mosque Change:', payload);
+        fetchMosques(); // Always re-fetch to ensure full data consistency
       })
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'namaz_times' }, () => fetchMosques())
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'votes' }, () => fetchMosques())
-      .subscribe();
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'namaz_times' }, (payload) => {
+        console.log('Realtime Namaz Time Change:', payload);
+        fetchMosques();
+      })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'votes' }, (payload) => {
+        console.log('Realtime Vote Change:', payload);
+        fetchMosques();
+      })
+      .subscribe((status) => {
+        console.log('Supabase Realtime Subscription Status:', status);
+        if (status === 'SUBSCRIBED') {
+          console.log('Successfully connected to Realtime!');
+        }
+      });
 
     return () => {
+      console.log('Cleaning up Supabase subscription');
       supabase.removeChannel(mosquesSubscription);
     };
   }, []);
@@ -231,6 +239,7 @@ export default function App() {
         .eq('status', 'approved');
 
       if (error) throw error;
+      console.log('Fetched mosques:', data);
 
       const formatted = data.map((m: any) => ({
         ...m,
@@ -247,20 +256,34 @@ export default function App() {
   };
 
   const handleLocationPick = async (lat: number, lng: number) => {
+    console.log('Location picked:', lat, lng);
     setIsFetchingName(true);
     setNewMosque(prev => ({ ...prev, lat, lng }));
     setIsAddModalOpen(true);
+    setIsPickingLocation(false); // Stop picking mode immediately
 
     try {
       const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&accept-language=bn`);
       const data = await res.json();
-      const name = data.display_name.split(',')[0];
+      const addr = data.address;
+      const name = addr.mosque || addr.amenity || addr.suburb || addr.road || data.display_name.split(',')[0];
       setNewMosque(prev => ({ ...prev, name_bn: name, name_en: name }));
     } catch (err) {
       console.error('Reverse geocoding failed', err);
     } finally {
       setIsFetchingName(false);
     }
+  };
+   const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number) => {
+    const R = 6371; // Radius of the earth in km
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLon = (lon2 - lon1) * Math.PI / 180;
+    const a =
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+      Math.sin(dLon / 2) * Math.sin(dLon / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    return R * c;
   };
 
   const handleAddNamazTimeExisting = async (mosqueId: number) => {
@@ -286,6 +309,7 @@ export default function App() {
     }
 
     try {
+      console.log('Submitting mosque:', newMosque);
       // 1. Insert Mosque
       const { data: mosque, error: mosqueError } = await supabase
         .from('mosques')
@@ -301,6 +325,7 @@ export default function App() {
         .single();
 
       if (mosqueError) throw mosqueError;
+      console.log('Inserted mosque:', mosque);
 
       // 2. Insert Namaz Times
       const timesToInsert = cleanedTimes.map(time => ({
@@ -313,10 +338,14 @@ export default function App() {
         .insert(timesToInsert);
 
       if (timesError) throw timesError;
+      console.log('Inserted namaz times');
 
       setIsAddModalOpen(false);
       setIsPickingLocation(false);
       setNewMosque({ name_en: '', name_bn: '', lat: 0, lng: 0, eid_date: '', namaz_times: [''] });
+      
+      // Manually fetch after success to be sure
+      fetchMosques();
     } catch (err) {
       console.error('Submission failed:', err);
       alert(t.error);
@@ -438,20 +467,8 @@ export default function App() {
     }
   };
 
-  const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number) => {
-    const R = 6371; // Radius of the earth in km
-    const dLat = (lat2 - lat1) * Math.PI / 180;
-    const dLon = (lon2 - lon1) * Math.PI / 180;
-    const a =
-      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
-      Math.sin(dLon / 2) * Math.sin(dLon / 2);
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-    return R * c;
-  };
-
   const filteredMosques = useMemo(() => {
-    return mosques
+    const result = mosques
       .map(m => {
         if (userLocation) {
           return { ...m, distance: calculateDistance(userLocation[0], userLocation[1], m.lat, m.lng) };
@@ -461,14 +478,18 @@ export default function App() {
       .filter(m => {
         const query = searchQuery.trim().toLowerCase();
         const matchesSearch = query === '' ||
-          m.name_en.toLowerCase().includes(query) ||
-          m.name_bn.includes(query);
+          (m.name_en && m.name_en.toLowerCase().includes(query)) ||
+          (m.name_bn && m.name_bn.includes(query));
 
         const matchesDate = dateFilter === '' || m.eid_date === dateFilter;
-        const matchesDistance = distanceFilter === null || (m.distance !== undefined && m.distance <= distanceFilter);
+        // If distance filter is applied but no user location, we ignore distance filter
+        const matchesDistance = !distanceFilter || !userLocation || (m.distance !== undefined && m.distance <= distanceFilter);
 
         return matchesSearch && matchesDate && matchesDistance;
       });
+    
+    console.log(`Filtered Mosques: ${result.length} (Total: ${mosques.length})`);
+    return result;
   }, [mosques, searchQuery, dateFilter, distanceFilter, userLocation]);
 
   const getUserLocation = () => {
