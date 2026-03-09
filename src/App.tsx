@@ -580,6 +580,7 @@ export default function App() {
             />
             {searchQuery && (
               <button
+                type="button"
                 onClick={() => setSearchQuery('')}
                 className="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 hover:bg-slate-200/50 rounded-full text-slate-400 hover:text-slate-600 transition-all active:scale-90"
                 title="Clear search"
@@ -631,8 +632,20 @@ export default function App() {
               <Tooltip permanent direction="top" offset={[0, -20]} className="custom-tooltip">{mosque.name_bn}</Tooltip>
               <Popup className="custom-popup" offset={[0, -10]}>
                 <div className="w-[280px] bg-white rounded-[24px] overflow-hidden">
-                  <div className="bg-emerald-600 p-5 text-white">
-                    <h3 className="font-black text-xl md:text-2xl leading-tight tracking-tight">{mosque.name_bn}</h3>
+                  <div className="bg-emerald-600 p-5 text-white relative">
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setSelectedMosqueId(null);
+                        const marker = markerRefs.current[mosque.id];
+                        if (marker) marker.closePopup();
+                      }}
+                      className="absolute top-4 right-4 p-2 bg-white/10 hover:bg-white/20 rounded-full transition-colors z-10"
+                    >
+                      <X size={18} />
+                    </button>
+                    <h3 className="font-black text-xl md:text-2xl leading-tight tracking-tight pr-8">{mosque.name_bn}</h3>
                     {mosque.distance !== undefined && (
                       <div className="flex items-center gap-1.5 mt-2.5 text-emerald-100 font-bold text-[11px] md:text-xs uppercase tracking-widest">
                         <Navigation size={12} />
@@ -660,7 +673,6 @@ export default function App() {
                           <div key={idx} className="bg-white border border-slate-200 px-3 py-1.5 rounded-xl text-xs md:text-sm font-black text-slate-700 shadow-sm flex items-center gap-2">
                             <span className="text-emerald-600 text-[10px] border-r border-slate-100 pr-2">{getJamatLabel(idx).split(' ')[0]}</span>
                             {time}
-                            <button onClick={(e) => { e.stopPropagation(); handleRemoveNamazTime(mosque.id, idx); }} className="absolute -top-1.5 -right-1.5 bg-red-500 text-white p-0.5 rounded-full shadow-md hover:bg-red-600 active:scale-90"><X size={10} /></button>
                           </div>
                         ))}
                         <button onClick={(e) => { e.stopPropagation(); handleAddNamazTimeExisting(mosque.id); }} className="flex flex-col items-center justify-center bg-stone-50 text-stone-400 px-3 py-1.5 rounded-xl text-[10px] font-bold border border-stone-200 border-dashed hover:bg-stone-100 hover:text-emerald-600 transition-all min-w-[80px]">
@@ -732,7 +744,7 @@ export default function App() {
             <motion.div initial={{ y: 50, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: 50, opacity: 0 }} className="fixed bottom-24 left-1/2 -translate-x-1/2 z-[2000] bg-slate-900/95 text-white px-8 py-5 rounded-[28px] shadow-2xl flex items-center gap-4 border border-white/10 backdrop-blur-xl min-w-[300px] justify-center">
               <div className="bg-emerald-500 p-2.5 rounded-xl animate-pulse shadow-lg shadow-emerald-500/20"><MapPin size={22} /></div>
               <span className="text-sm md:text-base font-black tracking-tight">{t.pickInstruction}</span>
-              <button onClick={() => setIsPickingLocation(false)} className="ml-4 p-2.5 bg-white/10 hover:bg-white/20 rounded-full transition-colors"><X size={20} /></button>
+              <button type="button" onClick={() => setIsPickingLocation(false)} className="ml-4 p-2.5 bg-white/10 hover:bg-white/20 rounded-full transition-colors"><X size={20} /></button>
             </motion.div>
           )}
         </AnimatePresence>
@@ -786,7 +798,7 @@ export default function App() {
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setIsAddModalOpen(false)} className="absolute inset-0 bg-stone-900/60 backdrop-blur-sm" />
             <motion.div initial={{ scale: 0.9, opacity: 0, y: 20 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.9, opacity: 0, y: 20 }} className="relative w-full max-w-xl bg-white rounded-[32px] overflow-hidden shadow-2xl flex flex-col max-h-[90vh]">
               <div className="bg-emerald-600 p-8 text-white relative">
-                <button onClick={() => setIsAddModalOpen(false)} className="absolute top-8 right-8 p-2 bg-white/10 hover:bg-white/20 rounded-full transition-colors"><X size={20} /></button>
+                <button type="button" onClick={() => setIsAddModalOpen(false)} className="absolute top-8 right-8 p-2 bg-white/10 hover:bg-white/20 rounded-full transition-colors"><X size={20} /></button>
                 <div className="flex items-center gap-4 mb-3">
                   <div className="bg-white p-3 rounded-2xl text-emerald-600 shadow-2xl scale-110"><Plus size={28} /></div>
                   <h2 className="text-2xl md:text-3xl font-black tracking-tight">{t.addMosque}</h2>
@@ -900,6 +912,7 @@ export default function App() {
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         .leaflet-container { background: #f5f5f4 !important; }
         .custom-popup .leaflet-popup-content-wrapper { border-radius: 24px; padding: 0; overflow: hidden; box-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.15); border: 1px solid rgba(0,0,0,0.05); }
+        .custom-popup .leaflet-popup-close-button { display: none; }
         .custom-popup .leaflet-popup-tip { display: none; }
         .custom-popup .leaflet-popup-content { margin: 0; width: 280px !important; }
         .custom-tooltip { background: white; border: 1px solid #e5e7eb; border-radius: 8px; padding: 4px 8px; font-weight: 800; font-size: 10px; color: #065f46; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); white-space: nowrap; }
