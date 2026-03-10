@@ -609,7 +609,7 @@ export default function App() {
             >
               {m.name_bn}
             </button>
-          ))}
+          ))}http://www.w3.org/2000/svg
         </div>
       </div>
 
@@ -688,10 +688,10 @@ export default function App() {
                           <MoonStar size={12} />
                           রিপোর্ট
                         </button>
-                        <button onClick={() => handleRemoveMosque(mosque.id)} className="flex items-center justify-center gap-2 py-2 bg-red-50 text-red-700 rounded-xl font-bold text-[10px] border border-red-100 uppercase tracking-widest">
+                        {/* <button onClick={() => handleRemoveMosque(mosque.id)} className="flex items-center justify-center gap-2 py-2 bg-red-50 text-red-700 rounded-xl font-bold text-[10px] border border-red-100 uppercase tracking-widest">
                           <Trash2 size={12} />
                           মুছুন
-                        </button>
+                        </button> */}
                       </div>
                       <div className="flex items-center gap-2">
                         <button onClick={() => handleVote(mosque.id, true)} className="flex-1 flex items-center justify-center gap-2 py-3.5 rounded-xl font-bold text-xs bg-emerald-50 text-emerald-700 hover:bg-emerald-100 active:scale-95 border border-emerald-100 shadow-sm transition-all">
