@@ -609,7 +609,7 @@ export default function App() {
             >
               {m.name_bn}
             </button>
-          ))}http://www.w3.org/2000/svg
+          ))}
         </div>
       </div>
 
