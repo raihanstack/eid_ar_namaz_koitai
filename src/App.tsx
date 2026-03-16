@@ -375,22 +375,46 @@ export default function App() {
 
   const handleVote = async (mosqueId: number, isTrue: boolean) => {
     const votedKey = `voted_${mosqueId}`;
-    if (localStorage.getItem(votedKey)) {
-      showToast('আপনি আগেই এই মসজিদে ভোট দিয়েছেন।', 'info');
+    const localVote = localStorage.getItem(votedKey);
+    const newVoteString = isTrue ? 'yes' : 'no';
+
+    if (localVote === newVoteString) {
+      showToast('আপনার ভোট আগেই গ্রহণ করা হয়েছে।', 'info');
       return;
     }
 
     try {
-      const { error } = await supabase
+      // Check if completely new or just a switch
+      const { data: existingVotes, error: fetchError } = await supabase
         .from('votes')
-        .insert([{
-          voter_id: voterId,
-          mosque_id: mosqueId,
-          is_true: isTrue ? 1 : 0
-        }]);
+        .select('id')
+        .eq('voter_id', voterId)
+        .eq('mosque_id', mosqueId);
 
-      if (error) showToast(t.error, 'error');
-      localStorage.setItem(votedKey, 'true');
+      if (fetchError) throw fetchError;
+
+      const newVoteValue = isTrue ? 1 : 0;
+
+      if (existingVotes && existingVotes.length > 0) {
+        const { error: updateError } = await supabase
+          .from('votes')
+          .update({ is_true: newVoteValue })
+          .eq('id', existingVotes[0].id);
+
+        if (updateError) throw updateError;
+      } else {
+        const { error: insertError } = await supabase
+          .from('votes')
+          .insert([{
+            voter_id: voterId,
+            mosque_id: mosqueId,
+            is_true: newVoteValue
+          }]);
+
+        if (insertError) throw insertError;
+      }
+
+      localStorage.setItem(votedKey, newVoteString);
       fetchMosques();
     } catch (err) {
       console.error('Voting failed:', err);

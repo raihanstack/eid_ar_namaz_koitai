@@ -1,8 +1,20 @@
 {
   "name": "react-example",
-  "private": true,
   "version": "0.0.0",
+  "private": true,
+  "description": "A community-driven platform to find and verify Eid prayer locations and timings. No registration required.",
+  "homepage": "https://github.com/raihanstack/eid_ar_namaz_koitai#readme",
+  "bugs": {
+    "url": "https://github.com/raihanstack/eid_ar_namaz_koitai/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/raihanstack/eid_ar_namaz_koitai.git"
+  },
+  "license": "ISC",
+  "author": "",
   "type": "module",
+  "main": "index.js",
   "scripts": {
     "dev": "tsx server.ts",
     "build": "vite build",
